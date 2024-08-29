@@ -1,6 +1,6 @@
 import { TSESLint } from "@typescript-eslint/utils";
 
-type MessageIds = "functionUnused" | "messageIdForSomeOtherFailure";
+type MessageIds = "functionUnused" | "localNoExport";
 
 const myRule: TSESLint.RuleModule<MessageIds> = {
   defaultOptions: [],
@@ -8,7 +8,7 @@ const myRule: TSESLint.RuleModule<MessageIds> = {
     type: "suggestion",
     messages: {
       functionUnused: "This function Ain't used",
-      messageIdForSomeOtherFailure: "Error message for some other failure",
+      localNoExport: "Don't export local- functions",
     },
     schema: [], // no options
   },
@@ -19,20 +19,11 @@ const myRule: TSESLint.RuleModule<MessageIds> = {
         return;
       }
       if (name.startsWith("local")) {
-        let parent: typeof node.parent = node;
-        while (parent.parent) {
-          parent = parent.parent;
-        }
-        let count = 0;
         const lines = context.getSourceCode().getLines();
-        lines.forEach((element) => {
-          if (element.includes(name as string)) {
-            count += 1;
-          }
-        });
-        if (count === 1) {
+        const line = lines[node.loc.start.line - 1];
+        if (line?.includes("export")) {
           context.report({
-            messageId: "functionUnused",
+            messageId: "localNoExport",
             node: node,
           });
         }

@@ -1,4 +1,4 @@
-export function localMain(args: string[]) {
+function localMain(args: string[]) {
   let lastArg;
   if (args.length === 0) {
     return;
