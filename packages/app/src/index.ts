@@ -1,10 +1,12 @@
-const foo = () => {}
+export function localMain(args: string[]) {
+  let lastArg;
+  if (args.length === 0) {
+    return;
+  }
+  for (let arg in args) {
+    lastArg = arg;
+  }
+  return lastArg;
+}
 
-const bar = () => {}
-
-const fooBar = () => {}
-
-
-foo()
-bar()
-fooBar()
+localMain([]);

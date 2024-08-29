@@ -1,37 +1,42 @@
-import { TSESLint, AST_NODE_TYPES } from "@typescript-eslint/utils";
+import { TSESLint } from "@typescript-eslint/utils";
 
-type MessageIds = "messageIdForSomeFailure" | "messageIdForSomeOtherFailure";
+type MessageIds = "functionUnused" | "messageIdForSomeOtherFailure";
 
 const myRule: TSESLint.RuleModule<MessageIds> = {
   defaultOptions: [],
   meta: {
     type: "suggestion",
     messages: {
-      messageIdForSomeFailure: "Error message for some failure 1",
+      functionUnused: "This function Ain't used",
       messageIdForSomeOtherFailure: "Error message for some other failure",
     },
     schema: [], // no options
   },
   create: (context) => ({
-    CallExpression: (node) => {
-      if (node.callee.type !== AST_NODE_TYPES.Identifier) {
+    FunctionDeclaration(node) {
+      let name = node.id?.name;
+      if (!name) {
         return;
       }
-
-      if (node.callee.name === "foo") {
-        return context.report({
-          node: node.callee,
-          messageId: "messageIdForSomeFailure",
+      if (name.startsWith("local")) {
+        let parent: typeof node.parent = node;
+        while (parent.parent) {
+          parent = parent.parent;
+        }
+        let count = 0;
+        const lines = context.getSourceCode().getLines();
+        lines.forEach((element) => {
+          if (element.includes(name as string)) {
+            count += 1;
+          }
         });
+        if (count === 1) {
+          context.report({
+            messageId: "functionUnused",
+            node: node,
+          });
+        }
       }
-      if (node.callee.name === "bar") {
-        return context.report({
-          node: node.callee,
-          messageId: "messageIdForSomeOtherFailure",
-        });
-      }
-
-      return;
     },
   }),
 };
